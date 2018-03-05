@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="urn:com.pronoia.test/schema/blueprint/test/simple-handler"
+        elementFormDefault="qualified">
+
+    <xs:element name="simple-handler">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="sub-element" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="boolean-sub-attribute" type="xs:boolean"/>
+                        <xs:attribute name="string-sub-attribute" type="xs:string" use="required"/>
+                        <xs:attribute name="string-sub-attribute-with-default-value" type="xs:string" default="My Default Value"/>
+                        <xs:attribute name="empty-string-sub-attribute" type="xs:string"/>
+                        <xs:attribute name="short-sub-attribute" type="xs:short" default="987"/>
+                        <xs:attribute name="integer-sub-attribute" type="xs:integer"/>
+                        <xs:attribute name="long-sub-attribute" type="xs:long"/>
+                        <xs:attribute name="float-sub-attribute" type="xs:float"/>
+                        <xs:attribute name="double-sub-attribute" type="xs:double"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="sub-element-with-value" type="string" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="empty-sub-element" type="string" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="boolean-handler-attribute" type="xs:boolean" />
+            <xs:attribute name="string-handler-attribute" type="xs:string" use="required"></xs:attribute>
+            <xs:attribute name="short-handler-attribute" type="xs:short"/>
+            <xs:attribute name="integer-handler-attribute" type="xs:integer"/>
+            <xs:attribute name="long-handler-attribute" type="xs:long"/>
+            <xs:attribute name="float-handler-attribute" type="xs:float"/>
+            <xs:attribute name="double-handler-attribute" type="xs:double"/>
+        </xs:complexType>
+    </xs:element>
+
+</schema>

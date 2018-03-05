@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xsi:schemaLocation="urn:com.pronoia.test/schema/blueprint/test/simple-handler /META-INF/schema/simple-handler.xsd">
+
+    <simple-handler xmlns="urn:com.pronoia.test/schema/blueprint/test/simple-handler"
+                    string-handler-attribute="my required handler attribute value" short-handler-attribute="5678">
+        <sub-element string-sub-attribute="required string value" empty-string-sub-attribute=""
+                     boolean-sub-attribute="false"
+                     short-sub-attribute="123"
+                     integer-sub-attribute="1234567890"
+                     long-sub-attribute="9876543210"
+                     float-sub-attribute="1.234"
+                     double-sub-attribute="5.6789"/>
+        <sub-element-with-value>Sub-Element Value</sub-element-with-value>
+        <sub-element-with-value>Sub-Element Value 2</sub-element-with-value>
+        <empty-sub-element/>
+        <empty-sub-element></empty-sub-element>
+    </simple-handler>
+
+</blueprint>
