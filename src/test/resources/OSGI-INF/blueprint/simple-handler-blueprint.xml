@@ -14,8 +14,9 @@
                      double-sub-attribute="5.6789"/>
         <sub-element-with-value>Sub-Element Value</sub-element-with-value>
         <sub-element-with-value>Sub-Element Value 2</sub-element-with-value>
-        <empty-sub-element/>
         <empty-sub-element></empty-sub-element>
+        <empty-sub-element/>
+        <nested-empty-elements><empty-sub-element></empty-sub-element><empty-sub-element/></nested-empty-elements>
     </simple-handler>
 
 </blueprint>

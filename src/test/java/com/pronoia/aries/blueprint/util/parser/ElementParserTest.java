@@ -14,10 +14,14 @@ import org.osgi.service.blueprint.container.ComponentDefinitionException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getChildElementValues;
+import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getChildElements;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
@@ -26,7 +30,7 @@ import static org.junit.Assert.fail;
  */
 public class ElementParserTest {
     static final String HANDLER_ELEMENT = "simple-handler";
-    static final String CHILD_ELEMENT =    "sub-element-with-value";
+    static final String CHILD_ELEMENT =   "sub-element-with-value";
 
     Element handledElement;
 
@@ -46,7 +50,98 @@ public class ElementParserTest {
 
         instance = new ElementParser(handledElement);
 
-        assertEquals(HANDLER_ELEMENT, instance.getName());
+        assertEquals(HANDLER_ELEMENT, instance.getTagName());
+    }
+
+    /**
+     * Description of test.
+     *
+     * @throws Exception in the event of a test error.
+     */
+    @Test
+    public void testConstructorWithNullElement() throws Exception {
+        try {
+            new ElementParser(null);
+            fail("Should have failed");
+        } catch (IllegalArgumentException expectedEx) {
+            // TODO: check exception message
+        }
+
+        try {
+            new ElementParser(null, "blah");
+            fail("Should have failed");
+        } catch (IllegalArgumentException expectedEx) {
+            // TODO: check exception message
+        }
+
+        try {
+            new ElementParser(null, "blah", 9999);
+            fail("Should have failed");
+        } catch (IllegalArgumentException expectedEx) {
+            // TODO: check exception message
+        }
+    }
+
+    /**
+     * Description of test.
+     *
+     * @throws Exception in the event of a test error.
+     */
+    @Test
+    public void testConstructorWithTagElement() throws Exception {
+        new ElementParser(handledElement, "sub-element");
+
+        try {
+            new ElementParser(handledElement, null);
+            fail("Should have failed");
+        } catch (IllegalArgumentException expectedEx) {
+            // TODO: check exception message
+        }
+
+
+        try {
+            new ElementParser(handledElement, "blah");
+            fail("Should have failed");
+        } catch (IllegalArgumentException expectedEx) {
+            // TODO: check exception message
+        }
+
+        new ElementParser(handledElement, "sub-element", 0);
+
+        // This one should generate a log warning
+        new ElementParser(handledElement, "sub-element-with-value");
+
+        // These two should not generate a log warning
+        new ElementParser(handledElement, "sub-element-with-value", 0);
+        new ElementParser(handledElement, "sub-element-with-value", 1);
+
+        try {
+            new ElementParser(handledElement, null, 9999);
+            fail("Should have failed");
+        } catch (IllegalArgumentException expectedEx) {
+            // TODO: check exception message
+        }
+
+        try {
+            new ElementParser(handledElement, "blah", 9999);
+            fail("Should have failed");
+        } catch (IllegalArgumentException expectedEx) {
+            // TODO: check exception message
+        }
+
+        try {
+            new ElementParser(handledElement, "sub-element", -1);
+            fail("Should have failed");
+        } catch (IllegalArgumentException expectedEx) {
+            // TODO: check exception message
+        }
+
+        try {
+            new ElementParser(handledElement, "sub-element", 9999);
+            fail("Should have failed");
+        } catch (IllegalArgumentException expectedEx) {
+            // TODO: check exception message
+        }
     }
 
     /**
@@ -59,23 +154,60 @@ public class ElementParserTest {
 
         ElementParser actual = instance.getElement(CHILD_ELEMENT);
 
-        assertEquals(CHILD_ELEMENT, actual.getName());
+        assertEquals(CHILD_ELEMENT, actual.getTagName());
 
         actual = instance.getElement(CHILD_ELEMENT, 1);
 
-        assertEquals(CHILD_ELEMENT, actual.getName());
+        assertEquals(CHILD_ELEMENT, actual.getTagName());
 
         try {
-            instance.getElement("bogus-element");
+            instance.getElement("bogus-element",true);
+            fail("Should have failed");
         } catch (ElementDefinitionException expectedEx) {
             // TODO: check exception message
         }
 
         try {
-            instance.getElement(CHILD_ELEMENT, 9999);
-        } catch (IllegalArgumentException expectedEx) {
+            instance.getElement(CHILD_ELEMENT, 9999, true);
+            fail("Should have failed");
+        } catch (ElementDefinitionException expectedEx) {
             // TODO: check exception message
         }
+    }
+
+    /**
+     * Description of test.
+     *
+     * @throws Exception in the event of a test error.
+     */
+    @Test
+    public void testGetElements() throws Exception {
+        List<ElementParser> childElements = instance.getElements();
+
+        assertEquals(6, childElements.size());
+        assertEquals("Sub-Element Value", childElements.get(1).getValue());
+
+        ElementParser sub = childElements.get(0);
+
+        childElements = sub.getElements();
+        assertEquals(0, childElements.size());
+    }
+
+    /**
+     * Description of test.
+     *
+     * @throws Exception in the event of a test error.
+     */
+    @Test
+    public void testGetElementsWithTagName() throws Exception {
+        List<ElementParser> childElements = instance.getElements("sub-element-with-value");
+
+        assertEquals(2, childElements.size());
+        assertEquals("Sub-Element Value 2", childElements.get(1).getValue());
+
+
+        childElements = instance.getElements("non-existent-element");
+        assertEquals(0, childElements.size());
     }
 
     /**
@@ -145,9 +277,11 @@ public class ElementParserTest {
         ElementParser subElement = instance.getElement("sub-element");
         assertEquals("", subElement.getStringAttribute("empty-string-sub-attribute", false));
 
+        assertEquals("", subElement.getStringAttribute("empty-string-sub-attribute", true));
+
         try {
-            assertEquals("", subElement.getStringAttribute("empty-string-sub-attribute", true));
-            fail("Should fail for empty attribute value");
+            assertEquals("", subElement.getStringAttribute("non-existent-attribute", true));
+            fail("Should fail for a missing attribute value");
         } catch (ElementDefinitionException expectedEx) {
             // TODO: Verify exception message
         }

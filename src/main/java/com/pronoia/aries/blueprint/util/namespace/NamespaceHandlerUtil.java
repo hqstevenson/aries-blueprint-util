@@ -1,6 +1,5 @@
 package com.pronoia.aries.blueprint.util.namespace;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,7 +52,7 @@ public final class NamespaceHandlerUtil {
         }
 
         if (requireElement && (answer == null || answer.isEmpty())) {
-            String explanation = String.format("No descendant elements found in parent element '%s'", element.getTagName());
+            String explanation = String.format("No descendant elements found in parent element '%s' in document '%s'", element.getTagName(), element.getOwnerDocument().getDocumentURI());
             throw new ElementDefinitionException(explanation);
         }
 
@@ -100,7 +99,8 @@ public final class NamespaceHandlerUtil {
         }
 
         if (requireElement && (answer == null || answer.isEmpty())) {
-            String explanation = String.format("Descendant element matching tag name '%s' not found in parent element '%s'", tagName, element.getTagName());
+            // TODO:  add checks for document URI - don't want NPE's
+            String explanation = String.format("Descendant element matching tag name '%s' not found in parent element '%s' in document '%s'", tagName, element.getTagName(), element.getOwnerDocument().getDocumentURI());
 
             throw new ElementDefinitionException(explanation);
         }
@@ -154,11 +154,11 @@ public final class NamespaceHandlerUtil {
      * Return the content of an @{link Element}, excluding descendants.
      *
      * @param element      The source @{link Element}
-     * @param requireValue If true, the value cannot be null or empty or an {@link ElementDefinitionException} will be thrown.
+     * @param requireValue If true, the element must have content or an {@link ElementDefinitionException} will be thrown.
      *
      * @return the text content of the element, which may be null/empty.
      *
-     * @throws ElementDefinitionException Raised if requireElement is true and the text content of the {@link Element} is null or empty.
+     * @throws ElementDefinitionException Raised if requireElement is true and the {@link Element} does not have content.
      */
     public static String getElementValue(final Element element, boolean requireValue) {
         if (element == null) {
@@ -196,11 +196,11 @@ public final class NamespaceHandlerUtil {
      * and the {@link Map} value is a {@link List} of the @{link Element} contents.
      *
      * @param element      The parent {@link Element}.
-     * @param requireValue If true, the value of at least one descendant @{link Element} cannot be null or empty or an {@link ElementDefinitionException} will be thrown.
+     * @param requireValue If true, at least one descendant @{link Element} must have content or an {@link ElementDefinitionException} will be thrown.
      *
      * @return a map of the content of descendant elements, which may be empty if no descendant elements were found in the parent element.
      *
-     * @throws ElementDefinitionException Raised if requireElement is true and the text content of all the descendant {@link Element}s is null or empty.
+     * @throws ElementDefinitionException Raised if requireElement is true and none of the descendant {@link Element}s have content.
      */
     public static Map<String, List<String>> getChildElementValues(final Element element, boolean requireValue) {
         Map<String, List<String>> answer = new LinkedHashMap<>();
@@ -211,7 +211,7 @@ public final class NamespaceHandlerUtil {
             for (String tagName : childElementMap.keySet()) {
                 List<String> tmpElementValuesForTagName = new LinkedList<>();
                 for (Element childElement : childElementMap.get(tagName)) {
-                    String childElementValue = childElement.getNodeValue();
+                    String childElementValue = getElementValue(childElement, false);
                     if (requireValue) {
                         if (childElementValue != null && !childElementValue.isEmpty()) {
                             tmpElementValuesForTagName.add(childElementValue);
@@ -384,7 +384,7 @@ public final class NamespaceHandlerUtil {
      *
      * @param element          The source {@link Element}.
      * @param attributeName    Then name of the attribute the return the value of.
-     * @param requireAttribute If true, the attribute must exist and its value must not be null or empty, or an {@link ElementDefinitionException} will be thrown.
+     * @param requireAttribute If true, the attribute must exist or an {@link ElementDefinitionException} will be thrown.
      *
      * @return the value of the attribute, or null if the attribute was not found in the element.
      *
@@ -392,14 +392,6 @@ public final class NamespaceHandlerUtil {
      */
     public static String getAttributeValue(final Element element, String attributeName, boolean requireAttribute) {
         Attr attr = getAttribute(element, attributeName, requireAttribute);
-
-        String attributeValue = attr == null ? null : attr.getValue();
-
-        if (requireAttribute && (attributeValue == null || attributeValue.isEmpty() )) {
-            String explanation = String.format("The value[%s] of the '%s' attribute found in the '%s' element is null or empty", attributeValue, attributeName, element.getTagName());
-
-            throw new ElementDefinitionException(explanation);
-        }
 
         return attr == null ? null : attr.getValue();
     }
@@ -409,33 +401,18 @@ public final class NamespaceHandlerUtil {
      * and the {@link Map} value is the value of the {@link Attr}.
      *
      * @param element The source @{link Element}.
-     * @param requireAttribute If true, the @{link Element} must contain at least one {@link Attr} with a value that is not null or empty or an {@link ElementDefinitionException} will be thrown.
+     * @param requireAttribute If true, the @{link Element} must contain at least one {@link Attr} or an {@link ElementDefinitionException} will be thrown.
      *
      * @return The map of attributes, which may be empty if no attributes were found in the element.
      *
-     * @throws ElementDefinitionException Raised if requireAttribute is true and the source {@link Element} does not contain any attributes with a value that is not null or empty.
+     * @throws ElementDefinitionException Raised if requireAttribute is true and the source {@link Element} does not contain any attributes.
      */
     public static Map<String, String> getAttributeValueMap(final Element element, boolean requireAttribute) {
         Map<String, Attr> attributeMap =  getAttributeMap(element, requireAttribute);
 
         Map<String, String> answer = new LinkedHashMap<>();
         for (Map.Entry<String, Attr> attrEntry : attributeMap.entrySet()) {
-            String attrName = attrEntry.getKey();
-            Attr attr = attrEntry.getValue();
-            String attrValue = (attr != null) ? attr.getValue() : null;
-            if (requireAttribute) {
-                if (attrValue != null && !attrValue.isEmpty()) {
-                    answer.put(attrName, attrValue);
-                }
-            } else {
-                answer.put(attrName, attrValue);
-            }
-        }
-
-        if (requireAttribute && answer.isEmpty()) {
-            String explanation = String.format("All attributes found in '%s' element have null or empty values", element.getTagName());
-
-            throw new ElementDefinitionException(explanation);
+            answer.put(attrEntry.getKey(), attrEntry.getValue().getValue());
         }
 
         return answer;
@@ -451,7 +428,7 @@ public final class NamespaceHandlerUtil {
      *
      * @return The {@link Boolean} value of the attribute, or null if the attribute was not found in the element.
      *
-     * @throws ElementDefinitionException Raised if requireAttribute is true and the attribute is not found in source {@link Element} or the attribute's value is null or empty.
+     * @throws ElementDefinitionException Raised if requireAttribute is true and the attribute is not found in source {@link Element}.
      */
     public static Boolean getBooleanAttribute(final Element element, final String attributeName, boolean requireAttribute) {
         String stringValue = getAttributeValue(element, attributeName, requireAttribute);
@@ -475,7 +452,7 @@ public final class NamespaceHandlerUtil {
      *
      * @return The {@link String} value of the attribute, or null if the attribute was not found in the element.
      *
-     * @throws ElementDefinitionException Raised if requireAttribute is true and the attribute is not found in source {@link Element} or the attribute's value is null or empty.
+     * @throws ElementDefinitionException Raised if requireAttribute is true and the attribute is not found in source {@link Element}.
      */
     public static String getStringAttribute(final Element element, final String attributeName, boolean requireAttribute) {
         return getAttributeValue(element, attributeName, requireAttribute);
