@@ -21,11 +21,19 @@ import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.ge
 import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getAttributeValue;
 import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getAttributeValueMap;
 import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getAttributes;
+import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getBooleanAttribute;
+import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getByteAttribute;
 import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getChildElementMap;
 import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getChildElementValues;
 import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getChildElements;
 
+import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getDoubleAttribute;
 import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getElementValue;
+import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getFloatAttribute;
+import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getIntegerAttribute;
+import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getLongAttribute;
+import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getShortAttribute;
+import static com.pronoia.aries.blueprint.util.namespace.NamespaceHandlerUtil.getStringAttribute;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.instanceOf;
@@ -484,6 +492,15 @@ public class NamespaceHandlerUtilTest {
         } catch (IllegalArgumentException expectedEx) {
             assertEquals("getAttribute(element[null], attributeName[null], requireAttribute[false]) - element cannot be null", expectedEx.getMessage());
         }
+
+        try {
+            getAttribute(handledElement, "non-existent-attribute", true);
+            fail("Should have failed");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Attribute 'non-existent-attribute' not found in element 'simple-handler'", expectedEx.getMessage());
+        }
+
+
     }
 
     /**
@@ -508,10 +525,10 @@ public class NamespaceHandlerUtilTest {
     @Test
     public void testGetAttributes() throws Exception {
         List<Attr> attributes = getAttributes(handledElement, true);
-        assertEquals(3, attributes.size());
+        assertEquals(4, attributes.size());
 
         attributes = getAttributes(handledElement, false);
-        assertEquals(3, attributes.size());
+        assertEquals(4, attributes.size());
 
         attributes = getAttributes(subWithValue, false);
         assertEquals(0, attributes.size());
@@ -532,14 +549,14 @@ public class NamespaceHandlerUtilTest {
     @Test
     public void testGetAttributeMap() throws Exception {
         Map<String, Attr> attributeMap = getAttributeMap(handledElement, true);
-        assertEquals(3, attributeMap.size());
-        assertThat(attributeMap.keySet(), containsInAnyOrder("xmlns", "string-handler-attribute", "short-handler-attribute"));
+        assertEquals(4, attributeMap.size());
+        assertThat(attributeMap.keySet(), containsInAnyOrder("xmlns", "string-handler-attribute", "short-handler-attribute", "empty-string-handler-attribute"));
         assertThat(attributeMap.get("short-handler-attribute"), instanceOf(Attr.class));
         assertEquals("5678", attributeMap.get("short-handler-attribute").getValue());
 
         attributeMap = getAttributeMap(handledElement, false);
-        assertEquals(3, attributeMap.size());
-        assertThat(attributeMap.keySet(), containsInAnyOrder("xmlns", "string-handler-attribute", "short-handler-attribute"));
+        assertEquals(4, attributeMap.size());
+        assertThat(attributeMap.keySet(), containsInAnyOrder("xmlns", "string-handler-attribute", "short-handler-attribute", "empty-string-handler-attribute"));
         assertThat(attributeMap.get("short-handler-attribute"), instanceOf(Attr.class));
         assertEquals("5678", attributeMap.get("short-handler-attribute").getValue());
 
@@ -563,10 +580,273 @@ public class NamespaceHandlerUtilTest {
     public void testGetAttributeValueMap() throws Exception {
         Map<String, String> attributeMap = getAttributeValueMap(handledElement, true);
 
-        assertEquals(3, attributeMap.size());
-        assertThat(attributeMap.keySet(), containsInAnyOrder("xmlns", "string-handler-attribute", "short-handler-attribute"));
+        assertEquals(4, attributeMap.size());
+        assertThat(attributeMap.keySet(), containsInAnyOrder("xmlns", "string-handler-attribute", "short-handler-attribute", "empty-string-handler-attribute"));
         assertThat(attributeMap.get("short-handler-attribute"), instanceOf(String.class));
         assertEquals("5678", attributeMap.get("short-handler-attribute"));
     }
 
+    /**
+     * Description of test.
+     *
+     * @throws Exception in the event of a test error.
+     */
+    @Test
+    public void testGetBooleanAttribute() throws Exception {
+        String attributeName = "boolean-sub-attribute";
+
+        try {
+            getBooleanAttribute(handledElement, "non-existent-attribute", true);
+            fail("Should fail for non-existent attribute");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Attribute 'non-existent-attribute' not found in element 'simple-handler'", expectedEx.getMessage());
+        }
+
+        assertNull(getBooleanAttribute(handledElement, attributeName, false));
+        
+        assertEquals(Boolean.valueOf(false), getBooleanAttribute(sub, attributeName, true));
+    }
+
+    /**
+     * Description of test.
+     *
+     * @throws Exception in the event of a test error.
+     */
+    @Test
+    public void testGetStringAttribute() throws Exception {
+        assertEquals("my required handler attribute value", getStringAttribute(handledElement, "string-handler-attribute", false));
+        assertEquals("my required handler attribute value", getStringAttribute(handledElement,"string-handler-attribute", true));
+
+
+        try {
+            getStringAttribute(handledElement,"non-existent-attribute", true);
+            fail("Should fail for non-existent attribute");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Attribute 'non-existent-attribute' not found in element 'simple-handler'", expectedEx.getMessage());
+        }
+
+        assertEquals("", getStringAttribute(sub, "empty-string-sub-attribute", false));
+
+        assertEquals("", getStringAttribute(sub, "empty-string-sub-attribute", true));
+
+        try {
+            getStringAttribute(sub,"non-existent-attribute", true);
+            fail("Should fail for a missing attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Attribute 'non-existent-attribute' not found in element 'sub-element'", expectedEx.getMessage());
+        }
+
+    }
+
+    /**
+     * Description of test.
+     *
+     * @throws Exception in the event of a test error.
+     */
+    @Test
+    public void testGetByteAttribute() throws Exception {
+        String attributeName = "short-sub-attribute";
+        try {
+            getByteAttribute(handledElement, "non-existent-attribute", true);
+            fail("Should fail for non-existent attribute");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Attribute 'non-existent-attribute' not found in element 'simple-handler'", expectedEx.getMessage());
+        }
+
+        assertEquals(Byte.valueOf("123"), getByteAttribute(sub, attributeName, true));
+        assertEquals(Byte.valueOf("123"), getByteAttribute(sub, attributeName, false));
+
+        assertNull(getByteAttribute(handledElement, attributeName, false));
+
+        try {
+            getByteAttribute(handledElement, "string-handler-attribute", true);
+            fail("Should fail for un-convertible attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Error converting value 'my required handler attribute value' of attribute 'string-handler-attribute' in element 'simple-handler' to class java.lang.Byte", expectedEx.getMessage());
+        }
+
+        try {
+            getByteAttribute(handledElement, "string-handler-attribute", false);
+            fail("Should fail for un-convertible attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Error converting value 'my required handler attribute value' of attribute 'string-handler-attribute' in element 'simple-handler' to class java.lang.Byte", expectedEx.getMessage());
+        }
+    }
+
+    /**
+     * Description of test.
+     *
+     * @throws Exception in the event of a test error.
+     */
+    @Test
+    public void testGetShortAttribute() throws Exception {
+        assertNull(getShortAttribute(handledElement, "non-existent-attribute", false));
+
+        try {
+            getShortAttribute(handledElement,"non-existent-attribute", true);
+            fail("Should fail for non-existent attribute");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Attribute 'non-existent-attribute' not found in element 'simple-handler'", expectedEx.getMessage());
+        }
+
+        assertEquals(Short.valueOf("5678"), getShortAttribute(handledElement,"short-handler-attribute", true));
+        assertEquals(Short.valueOf("5678"), getShortAttribute(handledElement,"short-handler-attribute", false));
+
+        try {
+            getShortAttribute(handledElement,"string-handler-attribute", true);
+            fail("Should fail for un-convertible attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Error converting value 'my required handler attribute value' of attribute 'string-handler-attribute' in element 'simple-handler' to class java.lang.Short", expectedEx.getMessage());
+        }
+
+        try {
+            getShortAttribute(handledElement,"string-handler-attribute", false);
+            fail("Should fail for un-convertible attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Error converting value 'my required handler attribute value' of attribute 'string-handler-attribute' in element 'simple-handler' to class java.lang.Short", expectedEx.getMessage());
+        }
+    }
+
+    /**
+     * Description of test.
+     *
+     * @throws Exception in the event of a test error.
+     */
+    @Test
+    public void testGetIntegerAttribute() throws Exception {
+        String attributeName = "integer-sub-attribute";
+
+        assertNull(getIntegerAttribute(handledElement, attributeName, false));
+
+        try {
+            getIntegerAttribute(handledElement, "non-existent-attribute", true);
+            fail("Should fail for non-existent attribute");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Attribute 'non-existent-attribute' not found in element 'simple-handler'", expectedEx.getMessage());
+        }
+
+        assertEquals(Integer.valueOf(1234567890), getIntegerAttribute(sub, attributeName, true));
+
+        try {
+            getIntegerAttribute(handledElement, "string-handler-attribute", true);
+            fail("Should fail for un-convertible attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Error converting value 'my required handler attribute value' of attribute 'string-handler-attribute' in element 'simple-handler' to class java.lang.Integer", expectedEx.getMessage());
+        }
+
+        try {
+            getIntegerAttribute(handledElement, "string-handler-attribute", false);
+            fail("Should fail for un-convertible attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Error converting value 'my required handler attribute value' of attribute 'string-handler-attribute' in element 'simple-handler' to class java.lang.Integer", expectedEx.getMessage());
+        }
+    }
+
+    /**
+     * Description of test.
+     *
+     * @throws Exception in the event of a test error.
+     */
+    @Test
+    public void testGetLongAttribute() throws Exception {
+        String attributeName = "long-sub-attribute";
+
+        assertNull(getLongAttribute(handledElement, attributeName, false));
+
+        try {
+            getLongAttribute(handledElement, "non-existent-attribute", true);
+            fail("Should fail for non-existent attribute");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Attribute 'non-existent-attribute' not found in element 'simple-handler'", expectedEx.getMessage());
+        }
+
+        assertEquals(Long.valueOf(9876543210L), getLongAttribute(sub, attributeName, true));
+        assertEquals(Long.valueOf(9876543210L), getLongAttribute(sub, attributeName, false));
+
+        try {
+            getLongAttribute(handledElement, "string-handler-attribute", true);
+            fail("Should fail for un-convertible attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Error converting value 'my required handler attribute value' of attribute 'string-handler-attribute' in element 'simple-handler' to class java.lang.Long", expectedEx.getMessage());
+        }
+
+        try {
+            getLongAttribute(handledElement, "string-handler-attribute", false);
+            fail("Should fail for un-convertible attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Error converting value 'my required handler attribute value' of attribute 'string-handler-attribute' in element 'simple-handler' to class java.lang.Long", expectedEx.getMessage());
+        }
+    }
+
+    /**
+     * Description of test.
+     *
+     * @throws Exception in the event of a test error.
+     */
+    @Test
+    public void testGetFloatAttribute() throws Exception {
+        String attributeName = "float-sub-attribute";
+
+        assertNull(getFloatAttribute(handledElement, attributeName, false));
+
+        try {
+            getFloatAttribute(handledElement, "non-existent-attribute", true);
+            fail("Should fail for non-existent attribute");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Attribute 'non-existent-attribute' not found in element 'simple-handler'", expectedEx.getMessage());
+        }
+
+        assertEquals(Float.valueOf(1.234f), getFloatAttribute(sub, attributeName, true));
+        assertEquals(Float.valueOf(1.234f), getFloatAttribute(sub, attributeName, false));
+
+        try {
+            getFloatAttribute(handledElement,"string-handler-attribute", true);
+            fail("Should fail for un-convertible attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Error converting value 'my required handler attribute value' of attribute 'string-handler-attribute' in element 'simple-handler' to class java.lang.Float", expectedEx.getMessage());
+        }
+
+        try {
+            getFloatAttribute(handledElement, "string-handler-attribute", false);
+            fail("Should fail for un-convertible attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Error converting value 'my required handler attribute value' of attribute 'string-handler-attribute' in element 'simple-handler' to class java.lang.Float", expectedEx.getMessage());
+        }
+    }
+
+    /**
+     * Description of test.
+     *
+     * @throws Exception in the event of a test error.
+     */
+    @Test
+    public void testGetDoubleAttribute() throws Exception {
+        String attributeName = "double-sub-attribute";
+
+        assertNull(getDoubleAttribute(handledElement, attributeName, false));
+
+        try {
+            getDoubleAttribute(handledElement, "non-existent-attribute", true);
+            fail("Should fail for non-existent attribute");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Attribute 'non-existent-attribute' not found in element 'simple-handler'", expectedEx.getMessage());
+        }
+
+        assertEquals(Double.valueOf(5.6789), getDoubleAttribute(sub, attributeName, true));
+        assertEquals(Double.valueOf(5.6789), getDoubleAttribute(sub, attributeName, false));
+
+        try {
+            getDoubleAttribute(handledElement, "string-handler-attribute", true);
+            fail("Should fail for un-convertible attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Error converting value 'my required handler attribute value' of attribute 'string-handler-attribute' in element 'simple-handler' to class java.lang.Double", expectedEx.getMessage());
+        }
+
+        try {
+            getDoubleAttribute(handledElement, "string-handler-attribute", false);
+            fail("Should fail for un-convertible attribute value");
+        } catch (ElementDefinitionException expectedEx) {
+            assertEquals("Error converting value 'my required handler attribute value' of attribute 'string-handler-attribute' in element 'simple-handler' to class java.lang.Double", expectedEx.getMessage());
+        }
+    }
 }

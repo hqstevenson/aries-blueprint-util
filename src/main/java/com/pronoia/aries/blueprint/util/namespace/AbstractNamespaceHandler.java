@@ -1,6 +1,7 @@
 package com.pronoia.aries.blueprint.util.namespace;
 
 import com.pronoia.aries.blueprint.ElementHandler;
+import com.pronoia.aries.blueprint.util.parser.ElementParser;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -22,10 +23,6 @@ import org.w3c.dom.Node;
  *
  */
 public abstract class AbstractNamespaceHandler implements NamespaceHandler {
-    public static final String MDC_NAMESPACE = "blueprint.namespace";
-    public static final String MDC_DOCUMENT_URI = "blueprint.document";
-    public static final String MDC_ELEMENT = "blueprint.element";
-
     Map<String, ElementHandler> elementHandlers = new HashMap<>();
 
     /**
@@ -56,26 +53,11 @@ public abstract class AbstractNamespaceHandler implements NamespaceHandler {
 
     @Override
     public Metadata parse(Element element, ParserContext parserContext) {
-        try {
-            String schema = getSchema();
-            if (schema != null && !schema.isEmpty()) {
-                MDC.put(MDC_NAMESPACE, schema);
-            }
-
+        try (MDCHelper helper = new MDCHelper(element) ) {
             if (element == null) {
                 String errorMessage = String.format("Illegal use of Namespace Handler %s - cannot parse null org.w3c.dom.Element", this.getClass().getName());
                 throw new ComponentDefinitionException(errorMessage);
             }
-
-            Document ownerDocument = element.getOwnerDocument();
-            if (ownerDocument != null) {
-                String documentURI = ownerDocument.getDocumentURI();
-                if (documentURI != null && !documentURI.isEmpty()) {
-                    MDC.put(MDC_DOCUMENT_URI, documentURI);
-                }
-            }
-
-            MDC.put(MDC_ELEMENT, element.getTagName());
 
             Metadata metadata = null;
 
@@ -104,10 +86,6 @@ public abstract class AbstractNamespaceHandler implements NamespaceHandler {
             }
 
             return metadata;
-        } finally {
-            MDC.remove(MDC_NAMESPACE);
-            MDC.remove(MDC_DOCUMENT_URI);
-            MDC.remove(MDC_ELEMENT);
         }
     }
 
@@ -127,6 +105,37 @@ public abstract class AbstractNamespaceHandler implements NamespaceHandler {
     protected void addElementHandler(ElementHandler handler) {
         if (handler != null) {
             getElementHandlers().put(handler.getElementName(), handler);
+        }
+    }
+
+    static class MDCHelper implements AutoCloseable {
+        public static final String MDC_NAMESPACE = "blueprint.namespace";
+        public static final String MDC_DOCUMENT_URI = "blueprint.document";
+        public static final String MDC_ELEMENT = "blueprint.element";
+
+        Map<String, String> originalContextMap;
+
+        public MDCHelper(Element element) {
+            originalContextMap = MDC.getCopyOfContextMap();
+
+            if (element != null) {
+                String schema = element.getNamespaceURI();
+                if (schema != null && !schema.isEmpty()) {
+                    MDC.put(MDC_NAMESPACE, schema);
+                }
+
+                Document document = element.getOwnerDocument();
+                if (document != null) {
+                    MDC.put(MDC_DOCUMENT_URI, document.getDocumentURI());
+                }
+
+                MDC.put(MDC_ELEMENT, element.getTagName());
+            }
+        }
+
+        @Override
+        public void close() {
+            MDC.setContextMap(originalContextMap);
         }
     }
 

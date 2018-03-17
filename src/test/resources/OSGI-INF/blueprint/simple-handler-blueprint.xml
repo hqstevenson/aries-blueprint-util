@@ -4,7 +4,9 @@
            xsi:schemaLocation="urn:com.pronoia.test/schema/blueprint/test/simple-handler /META-INF/schema/simple-handler.xsd">
 
     <simple-handler xmlns="urn:com.pronoia.test/schema/blueprint/test/simple-handler"
-                    string-handler-attribute="my required handler attribute value" short-handler-attribute="5678">
+                    string-handler-attribute="my required handler attribute value"
+                    empty-string-handler-attribute=""
+                    short-handler-attribute="5678">
         <sub-element string-sub-attribute="required string value" empty-string-sub-attribute=""
                      boolean-sub-attribute="false"
                      short-sub-attribute="123"

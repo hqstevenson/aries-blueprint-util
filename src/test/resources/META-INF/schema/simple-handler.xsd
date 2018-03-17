@@ -31,7 +31,8 @@
                 </xs:element>
             </xs:sequence>
             <xs:attribute name="boolean-handler-attribute" type="xs:boolean" />
-            <xs:attribute name="string-handler-attribute" type="xs:string" use="required"></xs:attribute>
+            <xs:attribute name="string-handler-attribute" type="xs:string" use="required"/>
+            <xs:attribute name="empty-string-handler-attribute" type="xs:string" />
             <xs:attribute name="short-handler-attribute" type="xs:short"/>
             <xs:attribute name="integer-handler-attribute" type="xs:integer"/>
             <xs:attribute name="long-handler-attribute" type="xs:long"/>

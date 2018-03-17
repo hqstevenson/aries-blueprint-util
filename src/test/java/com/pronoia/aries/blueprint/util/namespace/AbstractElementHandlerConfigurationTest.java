@@ -39,14 +39,14 @@ public class AbstractElementHandlerConfigurationTest {
             new ElementHandlerStub(null);
             fail("Constructor should have thrown an exception");
         } catch (IllegalArgumentException expectedEx) {
-            // TODO: verify exception message
+            assertEquals("AbstractElementHandler(elementTagName[null]) - the elementTagName argument cannot be null or empty", expectedEx.getMessage());
         }
 
         try {
             new ElementHandlerStub("");
             fail("Constructor should have thrown an exception");
         } catch (IllegalArgumentException expectedEx) {
-            // TODO: verify exception message
+            assertEquals("AbstractElementHandler(elementTagName[]) - the elementTagName argument cannot be null or empty", expectedEx.getMessage());
         }
     }
 

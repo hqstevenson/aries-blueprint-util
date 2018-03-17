@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -99,8 +100,12 @@ public final class NamespaceHandlerUtil {
         }
 
         if (requireElement && (answer == null || answer.isEmpty())) {
-            // TODO:  add checks for document URI - don't want NPE's
-            String explanation = String.format("Descendant element matching tag name '%s' not found in parent element '%s' in document '%s'", tagName, element.getTagName(), element.getOwnerDocument().getDocumentURI());
+            String documentUri = null;
+            Document document = element.getOwnerDocument();
+            if (document != null) {
+                documentUri = document.getDocumentURI();
+            }
+            String explanation = String.format("Descendant element matching tag name '%s' not found in parent element '%s' in document '%s'", tagName, element.getTagName(), documentUri);
 
             throw new ElementDefinitionException(explanation);
         }
@@ -505,7 +510,7 @@ public final class NamespaceHandlerUtil {
             try {
                 answer = Short.valueOf(stringValue);
             } catch (Exception conversionEx) {
-                throw new ElementDefinitionException(String.format(CONVERSION_EXPLANATION_FORMAT, stringValue, attributeName, element.getTagName(), element.getTagName(), Short.class), conversionEx);
+                throw new ElementDefinitionException(String.format(CONVERSION_EXPLANATION_FORMAT, stringValue, attributeName, element.getTagName(), Short.class), conversionEx);
             }
         }
 
