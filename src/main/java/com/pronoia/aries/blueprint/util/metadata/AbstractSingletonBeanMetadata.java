@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.pronoia.aries.blueprint.util.namespace;
+package com.pronoia.aries.blueprint.util.metadata;
 
-import org.osgi.service.blueprint.container.ComponentDefinitionException;
-import org.w3c.dom.Element;
+public abstract class AbstractSingletonBeanMetadata extends AbstractBeanMetadata {
+    protected AbstractSingletonBeanMetadata(String className) {
+        super(className);
 
+        this.initMethod = DEFAULT_INIT_METHOD;
+        this.destroyMethod = DEFAULT_DESTROY_METHOD;
 
-public class ElementDefinitionException extends ComponentDefinitionException {
-    public ElementDefinitionException(String explanation) {
-        super(explanation);
+        this.scope = SCOPE_SINGLETON;
+        this.activation = ACTIVATION_EAGER;
     }
 
-    public ElementDefinitionException(String explanation, Throwable cause) {
-        super(explanation, cause);
-    }
+
 }

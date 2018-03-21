@@ -1,3 +1,19 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.pronoia.aries.blueprint.util.namespace;
 
 import com.pronoia.aries.blueprint.ElementHandler;
@@ -5,6 +21,7 @@ import com.pronoia.aries.blueprint.util.parser.ElementParser;
 
 import java.net.URL;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,6 +53,9 @@ public abstract class AbstractNamespaceHandler implements NamespaceHandler {
 
     protected abstract String getSchema();
 
+    public Map<String, String> getDefaultAttributes() {
+        return new LinkedHashMap<>();
+    }
 
     @Override
     public URL getSchemaLocation(String schema) {
@@ -61,7 +81,7 @@ public abstract class AbstractNamespaceHandler implements NamespaceHandler {
 
             Metadata metadata = null;
 
-            String elementName = element.getLocalName();
+            String elementName = element.getTagName();
 
             if (elementHandlers == null) {
                 String errorMessage = String.format("Illegal state of namespace handler <%s> {schema = '%s' element='%s'}  - null element handler collection",
@@ -126,7 +146,11 @@ public abstract class AbstractNamespaceHandler implements NamespaceHandler {
 
                 Document document = element.getOwnerDocument();
                 if (document != null) {
-                    MDC.put(MDC_DOCUMENT_URI, document.getDocumentURI());
+                    String documentURI = document.getDocumentURI();
+                    if (documentURI == null) {
+                        documentURI = "null";
+                    }
+                    MDC.put(MDC_DOCUMENT_URI, documentURI);
                 }
 
                 MDC.put(MDC_ELEMENT, element.getTagName());
@@ -135,7 +159,9 @@ public abstract class AbstractNamespaceHandler implements NamespaceHandler {
 
         @Override
         public void close() {
-            MDC.setContextMap(originalContextMap);
+            if (originalContextMap != null) {
+                MDC.setContextMap(originalContextMap);
+            }
         }
     }
 

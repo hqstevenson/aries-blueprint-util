@@ -1,17 +1,31 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.pronoia.aries.blueprint.util.namespace;
 
-import com.pronoia.aries.blueprint.util.metadata.PrototypeBeanMetadataUtil;
+import com.pronoia.aries.blueprint.util.reflect.PrototypeBeanMetadataUtil;
+import com.pronoia.aries.blueprint.util.parser.ElementParser;
 
-import org.apache.aries.blueprint.ParserContext;
 import org.apache.aries.blueprint.mutable.MutableBeanMetadata;
 import org.junit.Before;
 import org.junit.Test;
 // import org.osgi.framework.BundleContext;
 // import org.osgi.service.blueprint.container.BlueprintContainer;
-import org.osgi.service.blueprint.container.ComponentDefinitionException;
 import org.osgi.service.blueprint.reflect.Metadata;
 import org.osgi.service.blueprint.reflect.RefMetadata;
-import org.w3c.dom.Element;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -39,14 +53,14 @@ public class AbstractElementHandlerConfigurationTest {
             new ElementHandlerStub(null);
             fail("Constructor should have thrown an exception");
         } catch (IllegalArgumentException expectedEx) {
-            assertEquals("AbstractElementHandler(elementTagName[null]) - the elementTagName argument cannot be null or empty", expectedEx.getMessage());
+            assertEquals("AbstractElementHandler(namespaceHandler, elementTagName[null]) - the elementTagName argument cannot be null or empty", expectedEx.getMessage());
         }
 
         try {
             new ElementHandlerStub("");
             fail("Constructor should have thrown an exception");
         } catch (IllegalArgumentException expectedEx) {
-            assertEquals("AbstractElementHandler(elementTagName[]) - the elementTagName argument cannot be null or empty", expectedEx.getMessage());
+            assertEquals("AbstractElementHandler(namespaceHandler, elementTagName[]) - the elementTagName argument cannot be null or empty", expectedEx.getMessage());
         }
     }
 
@@ -81,19 +95,34 @@ public class AbstractElementHandlerConfigurationTest {
         assertEquals("Unexpected component id for argument 0", "blueprintContainer", ((RefMetadata) metadata.getArguments().get(1).getValue()).getComponentId());
     }
 
+    static class NamespaceHandlerStub extends AbstractNamespaceHandler {
+        protected NamespaceHandlerStub() {
+        }
+
+        @Override
+        protected String getSchemaResourcePath() {
+            return "";
+        }
+
+        @Override
+        protected String getSchema() {
+            return "";
+        }
+    }
+
     static class ElementHandlerStub extends AbstractElementHandler {
         public static final String ELEMENT_NAME = "fake-element";
 
         public ElementHandlerStub() {
-            super(ELEMENT_NAME);
+            super(new NamespaceHandlerStub(), ELEMENT_NAME);
         }
 
         public ElementHandlerStub(String elementName) {
-            super(elementName);
+            super(new NamespaceHandlerStub(), elementName);
         }
 
         @Override
-        public Metadata parseElement(Element serviceElement, ParserContext parserContext) {
+        public Metadata createMetadata(ElementParser elementParser) {
             return null;
         }
     }

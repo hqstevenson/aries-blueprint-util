@@ -1,3 +1,19 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.pronoia.aries.blueprint.util.parser;
 
 import com.pronoia.aries.blueprint.util.namespace.ElementDefinitionException;
@@ -525,10 +541,10 @@ public class NamespaceHandlerUtilTest {
     @Test
     public void testGetAttributes() throws Exception {
         List<Attr> attributes = getAttributes(handledElement, true);
-        assertEquals(4, attributes.size());
+        assertEquals(5, attributes.size());
 
         attributes = getAttributes(handledElement, false);
-        assertEquals(4, attributes.size());
+        assertEquals(5, attributes.size());
 
         attributes = getAttributes(subWithValue, false);
         assertEquals(0, attributes.size());
@@ -549,14 +565,14 @@ public class NamespaceHandlerUtilTest {
     @Test
     public void testGetAttributeMap() throws Exception {
         Map<String, Attr> attributeMap = getAttributeMap(handledElement, true);
-        assertEquals(4, attributeMap.size());
-        assertThat(attributeMap.keySet(), containsInAnyOrder("xmlns", "string-handler-attribute", "short-handler-attribute", "empty-string-handler-attribute"));
+        assertEquals(5, attributeMap.size());
+        assertThat(attributeMap.keySet(), containsInAnyOrder("xmlns", "id", "string-handler-attribute", "short-handler-attribute", "empty-string-handler-attribute"));
         assertThat(attributeMap.get("short-handler-attribute"), instanceOf(Attr.class));
         assertEquals("5678", attributeMap.get("short-handler-attribute").getValue());
 
         attributeMap = getAttributeMap(handledElement, false);
-        assertEquals(4, attributeMap.size());
-        assertThat(attributeMap.keySet(), containsInAnyOrder("xmlns", "string-handler-attribute", "short-handler-attribute", "empty-string-handler-attribute"));
+        assertEquals(5, attributeMap.size());
+        assertThat(attributeMap.keySet(), containsInAnyOrder("xmlns", "id", "string-handler-attribute", "short-handler-attribute", "empty-string-handler-attribute"));
         assertThat(attributeMap.get("short-handler-attribute"), instanceOf(Attr.class));
         assertEquals("5678", attributeMap.get("short-handler-attribute").getValue());
 
@@ -580,8 +596,8 @@ public class NamespaceHandlerUtilTest {
     public void testGetAttributeValueMap() throws Exception {
         Map<String, String> attributeMap = getAttributeValueMap(handledElement, true);
 
-        assertEquals(4, attributeMap.size());
-        assertThat(attributeMap.keySet(), containsInAnyOrder("xmlns", "string-handler-attribute", "short-handler-attribute", "empty-string-handler-attribute"));
+        assertEquals(5, attributeMap.size());
+        assertThat(attributeMap.keySet(), containsInAnyOrder("xmlns", "id", "string-handler-attribute", "short-handler-attribute", "empty-string-handler-attribute"));
         assertThat(attributeMap.get("short-handler-attribute"), instanceOf(String.class));
         assertEquals("5678", attributeMap.get("short-handler-attribute"));
     }

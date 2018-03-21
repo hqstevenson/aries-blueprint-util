@@ -1,3 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -6,32 +25,42 @@
     <groupId>com.github.hqstevenson.aries</groupId>
     <artifactId>aries.blueprint.util</artifactId>
     <packaging>bundle</packaging>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
 
-    <name>Utilities for Aries Blueprint</name>
+    <name>Utilities for Apache Aries Blueprint</name>
+    <description>
+        A library to assist in generating Blueprint metadata.
+    </description>
+    <url>https://github.com/hqstevenson/aries-blueprint-util</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Quinn Stevenson</name>
+            <email>quinn@pronoia-solutions.com</email>
+            <organization>Pronoia Solutions</organization>
+            <organizationUrl>https://github.com/hqstevenson</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/hqstevenson/aries-blueprint-util.git</connection>
+        <developerConnection>scm:git:https://github.com/hqstevenson/aries-blueprint-util.git</developerConnection>
+        <url>https://github.com/hqstevenson/aries-blueprint-util/tree/master</url>
+    </scm>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.aries.blueprint</groupId>
             <artifactId>org.apache.aries.blueprint.core</artifactId>
-            <version>1.8.0</version>
+            <version>1.4.4</version>
         </dependency>
-
-        <!--
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>5.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.compendium</artifactId>
-            <version>5.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-        -->
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -85,7 +114,6 @@
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.8.2</version>
             </plugin>
-            <!-- Un-comment when ready to deploy
             <plugin>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.6</version>
@@ -99,7 +127,6 @@
                     </execution>
                 </executions>
             </plugin>
-             -->
             <plugin>
                 <artifactId>maven-install-plugin</artifactId>
                 <version>2.5.2</version>
@@ -108,7 +135,6 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.0.2</version>
             </plugin>
-            <!--
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.0.0</version>
@@ -121,7 +147,6 @@
                     </execution>
                 </executions>
             </plugin>
-             -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.2</version>

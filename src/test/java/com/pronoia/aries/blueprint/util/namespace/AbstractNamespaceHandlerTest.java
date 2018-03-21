@@ -1,8 +1,24 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.pronoia.aries.blueprint.util.namespace;
 
 import com.pronoia.aries.blueprint.ElementHandler;
-import com.pronoia.aries.blueprint.util.metadata.BeanMetadataUtil;
-import com.pronoia.aries.blueprint.util.metadata.PrototypeBeanMetadataUtil;
+import com.pronoia.aries.blueprint.util.reflect.PrototypeBeanMetadataUtil;
+import com.pronoia.aries.blueprint.util.parser.ElementParser;
 
 import java.io.File;
 import java.net.URL;
@@ -12,7 +28,6 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.aries.blueprint.ParserContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.service.blueprint.container.ComponentDefinitionException;
@@ -104,7 +119,7 @@ public class AbstractNamespaceHandlerTest {
             assertEquals(expectedMessage, expectedEx.getMessage());
         }
 
-        ElementHandlerStub elementHandlerStub = new ElementHandlerStub("simple-handler");
+        ElementHandlerStub elementHandlerStub = new ElementHandlerStub(instance, "simple-handler");
         instance.addElementHandler(elementHandlerStub);
 
         instance.parse(element, null);
@@ -135,7 +150,7 @@ public class AbstractNamespaceHandlerTest {
         }
 
         instance.elementHandlers = new HashMap<>();
-        instance.addElementHandler(new ElementHandlerStub("bad-handler-name"));
+        instance.addElementHandler(new ElementHandlerStub(instance, "bad-handler-name"));
 
         try {
             instance.parse(element, null);
@@ -171,8 +186,8 @@ public class AbstractNamespaceHandlerTest {
         instance.elementHandlers = null;
         assertEquals(expected, instance.getElementHandlers());
 
-        ElementHandler one = new ElementHandlerStub("element-one");
-        ElementHandler two = new ElementHandlerStub("element-two");
+        ElementHandler one = new ElementHandlerStub(instance, "element-one");
+        ElementHandler two = new ElementHandlerStub(instance, "element-two");
 
         expected.put(one.getElementName(), one);
         expected.put(two.getElementName(), two);
@@ -191,7 +206,7 @@ public class AbstractNamespaceHandlerTest {
     public void testAddElementHandler() throws Exception {
         final String elementName = "stub-element-for-add";
 
-        ElementHandler stub = new ElementHandlerStub(elementName);
+        ElementHandler stub = new ElementHandlerStub(instance, elementName);
 
         instance.addElementHandler(stub);
 
@@ -220,12 +235,12 @@ public class AbstractNamespaceHandlerTest {
         int parseCount = 0;
         Metadata answer = PrototypeBeanMetadataUtil.create(String.class);
 
-        public ElementHandlerStub(String elementName) {
-            super(elementName);
+        public ElementHandlerStub(AbstractNamespaceHandler namespaceHandler, String elementName) {
+            super(namespaceHandler, elementName);
         }
 
         @Override
-        public Metadata parseElement(Element serviceElement, ParserContext parserContext) {
+        public Metadata createMetadata(ElementParser elementParser) {
             ++parseCount;
             return answer;
         }
