@@ -17,7 +17,6 @@
 package com.pronoia.aries.blueprint.util.namespace;
 
 import com.pronoia.aries.blueprint.ElementHandler;
-import com.pronoia.aries.blueprint.util.parser.ElementParser;
 
 import java.net.URL;
 import java.util.HashMap;
