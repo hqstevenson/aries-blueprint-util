@@ -20,11 +20,22 @@ public abstract class AbstractSingletonBeanMetadata extends AbstractBeanMetadata
     protected AbstractSingletonBeanMetadata(String className) {
         super(className);
 
-        this.initMethod = DEFAULT_INIT_METHOD;
-        this.destroyMethod = DEFAULT_DESTROY_METHOD;
+        setDefaults();
+    }
 
-        this.scope = SCOPE_SINGLETON;
-        this.activation = ACTIVATION_EAGER;
+    protected AbstractSingletonBeanMetadata(Class clazz) {
+        super(clazz);
+
+        setDefaults();
+    }
+
+    void setDefaults() {
+        setInitMethod(DEFAULT_INIT_METHOD);
+        setDestroyMethod(DEFAULT_DESTROY_METHOD);
+
+        setScope(SCOPE_SINGLETON);
+
+        // setActivation(ACTIVATION_EAGER);
     }
 
 

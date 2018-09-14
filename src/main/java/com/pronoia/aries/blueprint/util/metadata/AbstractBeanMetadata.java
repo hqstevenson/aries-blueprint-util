@@ -16,170 +16,75 @@
  */
 package com.pronoia.aries.blueprint.util.metadata;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.osgi.service.blueprint.reflect.BeanArgument;
-import org.osgi.service.blueprint.reflect.BeanMetadata;
-import org.osgi.service.blueprint.reflect.BeanProperty;
-import org.osgi.service.blueprint.reflect.Target;
+import org.apache.aries.blueprint.reflect.BeanMetadataImpl;
+import org.osgi.service.blueprint.reflect.Metadata;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public abstract class AbstractBeanMetadata implements BeanMetadata {
+public abstract class AbstractBeanMetadata extends BeanMetadataImpl {
     public static final String DEFAULT_INIT_METHOD = "start";
     public static final String DEFAULT_DESTROY_METHOD = "stop";
 
-    final Logger log = LoggerFactory.getLogger(this.getClass());
-
-    final String className;
-
-    protected String initMethod = null;
-    protected String destroyMethod = null;
-    protected List<BeanArgument> arguments = new LinkedList<>();
-
-    protected String factoryMethod = null;
-    protected Target factoryComponent = null;
-
-    protected String scope = SCOPE_PROTOTYPE;
-    protected String id;
-    protected int activation = ACTIVATION_LAZY;
-    protected List<String> dependsOn = new LinkedList<>();
-
-
-    Map<String, String> attributeMap = new HashMap<>();
+    protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
     protected AbstractBeanMetadata(String className) {
-        this.className = className;
+        this.setClassName(className);
     }
 
-    public abstract boolean usesAttribute(String attributeName);
+    protected AbstractBeanMetadata(Class clazz) {
+        this.setClassName(clazz.getName());
+    }
 
-    public abstract String getPropertyName(String name);
+    public abstract String translatePropertyName(String name);
 
-    public abstract BeanProperty getPropertyMetadata(String propertyName, String propertyValue);
+    public abstract Metadata createPropertyMetadata(String propertyName, String propertyValue);
 
     /**
      * The attribute argument may contain attributes that don't apply - ignore them.
      *
-     * @param attributes
+     * @param properties
      */
-    public void setAttributes(Map<String, String> attributes, boolean logIgnoredAttributes) {
-        if (attributes != null && !attributes.isEmpty()) {
-            for (String attributeName : attributes.keySet()) {
-                if (attributeName.equals("id")) {
-                    id = attributes.get("id");
-                } else if (usesAttribute(attributeName)) {
-                    attributeMap.put(attributeName, attributes.get(attributeName));
-                } else if (logIgnoredAttributes) {
-                    switch (attributeName) {
+    public void addProperties(Map<String, String> properties, boolean logIgnoredProperties) {
+        if (properties != null && !properties.isEmpty()) {
+            for (String propertyName : properties.keySet()) {
+                String value = properties.get(propertyName);
+                if (propertyName.equals("id")) {
+                    this.setId(value);
+                } else if (propertyName.equals("depends-on")) {
+                    this.setDependsOn(parseDependsOnString(properties.get("depends-on")));
+                } else {
+                    String translatedPropertyName = translatePropertyName(propertyName);
+                    if (translatedPropertyName != null && !translatedPropertyName.isEmpty()) {
+                        addProperty(translatedPropertyName, createPropertyMetadata(translatedPropertyName, value));
+                    } else if (logIgnoredProperties) {
+                        switch (propertyName) {
                         case "xmlns":
                             // Don't need to log this one
                             break;
                         default:
-                            log.warn("Ignoring attribute {} = {}", attributeName, attributes.get(attributeName));
+                            log.warn("Ignoring {} = {}", propertyName, properties.get(propertyName));
+                        }
                     }
                 }
             }
         }
     }
 
-    public boolean hasAttribute(String attributeName) {
-        return attributeMap.containsKey(attributeName);
-    }
+    public static List<String> parseDependsOnString(String dependsOnString) {
+        List<String> answer = new LinkedList<>();
 
-    @Override
-    public String getClassName() {
-        if (className == null) {
-            // TODO:  Add more detail to exception message
-            throw new IllegalStateException("Class name must be specified");
-        }
-        return className;
-    }
-
-    @Override
-    public String getInitMethod() {
-        return initMethod;
-    }
-
-    @Override
-    public String getDestroyMethod() {
-        return destroyMethod;
-    }
-
-    @Override
-    public List<BeanArgument> getArguments() {
-        return arguments;
-    }
-
-
-    @Override
-    public List<BeanProperty> getProperties() {
-        List<BeanProperty> answer = new LinkedList<>();
-
-        for (Map.Entry<String, String> attribute : attributeMap.entrySet()) {
-            String propertyName = getPropertyName(attribute.getKey());
-
-            if (propertyName != null && !propertyName.isEmpty()) {
-                answer.add(getPropertyMetadata(propertyName, attribute.getValue()));
+        if (dependsOnString != null && !dependsOnString.isEmpty()) {
+            String[] dependsOnIds = dependsOnString.split(",");
+            for (String dependsOnId : dependsOnIds) {
+                answer.add(dependsOnId.trim());
             }
         }
-
         return answer;
-    }
-
-    @Override
-    public String getFactoryMethod() {
-        return factoryMethod;
-    }
-
-    @Override
-    public Target getFactoryComponent() {
-        return factoryComponent;
-    }
-
-    @Override
-    public String getScope() {
-        return scope;
-    }
-
-    @Override
-    public String getId() {
-        if (id == null || id.isEmpty()) {
-            id = this.getClass().getSimpleName() + "-" + System.currentTimeMillis();
-        }
-
-        return id;
-    }
-
-    @Override
-    public int getActivation() {
-        return activation;
-    }
-
-    @Override
-    public List<String> getDependsOn() {
-        return dependsOn;
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getSimpleName() + " {" +
-               "className='" + className + '\'' +
-               ", initMethod='" + initMethod + '\'' +
-               ", destroyMethod='" + destroyMethod + '\'' +
-               ", arguments=" + arguments +
-               ", factoryMethod='" + factoryMethod + '\'' +
-               ", factoryComponent=" + factoryComponent +
-               ", scope='" + scope + '\'' +
-               ", id='" + id + '\'' +
-               ", activation=" + activation +
-               ", dependsOn=" + dependsOn +
-               ", attributeMap=" + attributeMap +
-               '}';
     }
 }

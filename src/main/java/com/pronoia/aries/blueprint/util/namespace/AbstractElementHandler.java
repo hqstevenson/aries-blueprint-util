@@ -21,8 +21,11 @@ import com.pronoia.aries.blueprint.util.reflect.BeanMetadataUtil;
 import com.pronoia.aries.blueprint.util.reflect.RefMetadataUtil;
 import com.pronoia.aries.blueprint.util.parser.ElementParser;
 
+import javax.naming.OperationNotSupportedException;
+
 import org.apache.aries.blueprint.ParserContext;
 import org.apache.aries.blueprint.mutable.MutableBeanMetadata;
+import org.osgi.service.blueprint.container.ComponentDefinitionException;
 import org.osgi.service.blueprint.reflect.Metadata;
 import org.w3c.dom.Element;
 
@@ -47,11 +50,52 @@ public abstract class AbstractElementHandler implements ElementHandler {
         this.elementTagName = elementTagName;
     }
 
-    public abstract Metadata createMetadata(ElementParser handledElementParser);
+    /**
+     * Create the Blueprint Metadata from the ElementParser.
+     *
+     * NOTE:  Derived classes should override this method to create Metadata when the ParserContext is required.  This method takes precedence over the createMetadata(ElementParser) method.
+     *
+     * @param handledElementParser the source ElementParser for the Blueprint Metadata
+     * @param parserContext the Blueprint ParserContext
+     *
+     * @return the Blueprint Metadata generated using the ElementParser
+     */
+    public Metadata createMetadata(ElementParser handledElementParser, ParserContext parserContext) {
+        return null;
+    }
 
+    /**
+     * Create the Blueprint Metadata from the ElementParser.
+     *
+     * NOTE:  Derived classes should override this method to create Metadata when the ParserContext is not required.  The createMetadata(ElementParser, ParserContext) method takes precedence over this method.
+     *
+     * @param handledElementParser the source ElementParser for the Blueprint Metadata
+     *
+     * @return the Blueprint Metadata generated using the ElementParser
+     */
+    public Metadata createMetadata(ElementParser handledElementParser) {
+        return null;
+    }
+
+    /**
+     * Generate the Blueprint Metadata for the Element.
+     *
+     * NOTE:  This method will call the createMetadata(ElementParser, ParserContext) method first.  If that method returns null, this method will then call the createMetadata(ElementParser) method.
+     *
+     * @param handledElement the source XML for generating the Blueprint Metadata
+     * @param parserContext the Blueprint ParserContext
+     *
+     * @return the Blueprint Metadata generated for the Element
+     */
     @Override
     public Metadata parseElement(Element handledElement, ParserContext parserContext) {
-        return createMetadata(new ElementParser(handledElement));
+        ElementParser handledElementParser = new ElementParser(handledElement);
+        Metadata metadata = createMetadata(handledElementParser, parserContext);
+        if (metadata == null) {
+            metadata = createMetadata(handledElementParser);
+        }
+
+        return metadata;
     }
 
     @Override
@@ -71,6 +115,5 @@ public abstract class AbstractElementHandler implements ElementHandler {
         BeanMetadataUtil.addArgument(beanMetadata, RefMetadataUtil.create("blueprintBundleContext"), "org.osgi.framework.BundleContext", 0);
         BeanMetadataUtil.addArgument(beanMetadata, RefMetadataUtil.create("blueprintContainer"), "org.osgi.service.blueprint.container.BlueprintContainer", 1);
     }
-
 
 }

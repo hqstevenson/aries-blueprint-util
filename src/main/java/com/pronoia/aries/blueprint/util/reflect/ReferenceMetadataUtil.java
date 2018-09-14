@@ -18,6 +18,7 @@ package com.pronoia.aries.blueprint.util.reflect;
 
 import org.apache.aries.blueprint.mutable.MutableReferenceMetadata;
 import org.apache.aries.blueprint.reflect.MetadataUtil;
+import org.osgi.service.blueprint.reflect.ServiceReferenceMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,8 @@ public class ReferenceMetadataUtil {
      */
     public static MutableReferenceMetadata create() {
         MutableReferenceMetadata metadata = MetadataUtil.createMetadata(MutableReferenceMetadata.class);
+
+        metadata.setAvailability(ServiceReferenceMetadata.AVAILABILITY_MANDATORY);
 
         return metadata;
     }
