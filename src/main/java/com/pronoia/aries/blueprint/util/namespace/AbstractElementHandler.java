@@ -17,16 +17,15 @@
 package com.pronoia.aries.blueprint.util.namespace;
 
 import com.pronoia.aries.blueprint.ElementHandler;
+import com.pronoia.aries.blueprint.util.parser.ElementParser;
 import com.pronoia.aries.blueprint.util.reflect.BeanMetadataUtil;
 import com.pronoia.aries.blueprint.util.reflect.RefMetadataUtil;
-import com.pronoia.aries.blueprint.util.parser.ElementParser;
-
-import javax.naming.OperationNotSupportedException;
 
 import org.apache.aries.blueprint.ParserContext;
 import org.apache.aries.blueprint.mutable.MutableBeanMetadata;
-import org.osgi.service.blueprint.container.ComponentDefinitionException;
+
 import org.osgi.service.blueprint.reflect.Metadata;
+
 import org.w3c.dom.Element;
 
 

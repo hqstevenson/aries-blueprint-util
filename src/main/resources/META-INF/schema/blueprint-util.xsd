@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="urn:pronoia.com/schema/blueprint/util"
+        elementFormDefault="qualified">
+
+    <xs:element name="required-persistent-id">
+        <xs:complexType>
+            <xs:attribute name="id" type="xs:ID"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="required-configuration-listener" >
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="whitelist-pattern" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element name="blacklist-pattern" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:ID"/>
+        </xs:complexType>
+    </xs:element>
+
+</schema>
