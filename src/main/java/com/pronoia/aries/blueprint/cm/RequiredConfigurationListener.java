@@ -11,6 +11,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -47,6 +50,8 @@ public class RequiredConfigurationListener  implements ConfigurationListener, Re
     Date startTime;
     Date stopTime;
 
+    int registrationDelay = 5;
+
     List<Pattern> persistentIdBlacklistPatterns;
     List<Pattern> persistentIdWhitelistPatterns;
 
@@ -54,6 +59,8 @@ public class RequiredConfigurationListener  implements ConfigurationListener, Re
     Map<String, ServiceRegistration<RequiredPersistentId>> configurationServiceRegistrations = new ConcurrentHashMap<>();
 
     Logger log = LoggerFactory.getLogger(this.getClass());
+
+    ScheduledExecutorService registrationScheduler = Executors.newScheduledThreadPool(1);
 
     public RequiredConfigurationListener(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
@@ -85,6 +92,19 @@ public class RequiredConfigurationListener  implements ConfigurationListener, Re
 
     public void setRequiredConfigurationListenerId(String requiredConfigurationListenerId) {
         this.requiredConfigurationListenerId = requiredConfigurationListenerId;
+    }
+
+    public boolean hasRegistrationDelay() {
+        return (registrationDelay > 0);
+    }
+
+    @Override
+    public int getRegistrationDelay() {
+        return registrationDelay;
+    }
+
+    public void setRegistrationDelay(int registrationDelay) {
+        this.registrationDelay = Math.max(1, registrationDelay);
     }
 
     @Override
@@ -263,11 +283,8 @@ public class RequiredConfigurationListener  implements ConfigurationListener, Re
      */
     synchronized void registerServiceForPid(String pid) {
         if (!configurationServiceRegistrations.containsKey(pid)) {
-            log.info("Registering '{}' service for PID '{}'", RequiredPersistentId.class.getName(), pid);
-            Hashtable<String, String> serviceProperties = new Hashtable<>();
-            serviceProperties.put(CONFIGURATION_SERVICE_PROPERTY, pid);
-            ServiceRegistration<RequiredPersistentId> serviceRegistration = bundleContext.registerService(RequiredPersistentId.class, new RequiredPersistentIdImpl(pid), serviceProperties);
-            configurationServiceRegistrations.put(pid, serviceRegistration);
+            log.info("Scheduling PID {} for registration in {} seconds", pid, registrationDelay);
+            registrationScheduler.schedule(new RegistrationRunnable(pid), registrationDelay, TimeUnit.SECONDS);
         }
     }
 
@@ -292,22 +309,23 @@ public class RequiredConfigurationListener  implements ConfigurationListener, Re
      * @return true if the PID is a candidate for service registration; false otherwise
      */
     boolean isIgnoredPid(String pid) {
-        if (hasPersistentIdWhitelistPatterns()) {
-            for (Pattern pattern : persistentIdWhitelistPatterns) {
+        if (hasPersistentIdBlacklistPatterns()) {
+            for (Pattern pattern : persistentIdBlacklistPatterns) {
                 if (pattern.matcher(pid).matches()) {
-                    log.info("Whitelist pattern {} matched pid {}", pattern.pattern(), pid);
-                    return false;
+                    log.debug("Blacklist pattern {} matched pid {}", pattern.pattern(), pid);
+                    return true;
                 }
             }
         }
 
-        if (hasPersistentIdBlacklistPatterns()) {
-            for (Pattern pattern : persistentIdBlacklistPatterns) {
+        if (hasPersistentIdWhitelistPatterns()) {
+            for (Pattern pattern : persistentIdWhitelistPatterns) {
                 if (pattern.matcher(pid).matches()) {
-                    log.info("Blacklist pattern {} matched pid {}", pattern.pattern(), pid);
-                    return true;
+                    log.debug("Whitelist pattern {} matched pid {}", pattern.pattern(), pid);
+                    return false;
                 }
             }
+            return true;
         }
 
         return false;
@@ -394,4 +412,25 @@ public class RequiredConfigurationListener  implements ConfigurationListener, Re
         }
     }
 
+    class RegistrationRunnable implements Runnable {
+        final Logger log = LoggerFactory.getLogger(this.getClass());
+
+        final String pid;
+
+        public RegistrationRunnable(String pid) {
+            this.pid = pid;
+        }
+
+        @Override
+        public void run() {
+            if (!configurationServiceRegistrations.containsKey(pid)) {
+                log.info("Registering '{}' service for PID '{}'", RequiredPersistentId.class.getName(), pid);
+                Hashtable<String, String> serviceProperties = new Hashtable<>();
+                serviceProperties.put(CONFIGURATION_SERVICE_PROPERTY, pid);
+                ServiceRegistration<RequiredPersistentId> serviceRegistration = bundleContext.registerService(RequiredPersistentId.class, new RequiredPersistentIdImpl(pid), serviceProperties);
+                configurationServiceRegistrations.put(pid, serviceRegistration);
+            }
+
+        }
+    }
 }

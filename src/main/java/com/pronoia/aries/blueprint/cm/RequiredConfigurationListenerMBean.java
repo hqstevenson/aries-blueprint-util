@@ -10,6 +10,8 @@ public interface RequiredConfigurationListenerMBean {
     Date getStopTime();
     String getRequiredConfigurationListenerId();
 
+    int getRegistrationDelay();
+
     List<String> getPersistentIdWhitelists();
     List<String> getPersistentIdBlacklists();
 
